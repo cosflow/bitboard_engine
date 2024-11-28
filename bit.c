@@ -51,6 +51,8 @@ void print_bitboard(U64 bb)
 }
 //tabla de ataques -> [side][attacks]
 U64 pawn_attacks[2][64];
+U64 knight_attacks[64];
+U64 king_attacks[64];
 
 /* not A file
 0 1 1 1 1 1 1 1
@@ -85,23 +87,59 @@ U64 mask_pawn_attacks(int side, int square){
     return attacks;
 }
 
+U64 mask_knight_attacks(int square){
+    U64 localbb = 0ULL;
+    U64 attacks = 0ULL;
+
+    //set piece on board
+    set_bit(localbb, square);
+    if((localbb>>17) & not_h_file) attacks |= (localbb >> 17);
+    if((localbb>>15) & not_a_file) attacks |= (localbb >> 15);
+    if((localbb>>10) & not_hg_file) attacks |= (localbb >> 10);
+    if((localbb>>6) & not_ab_file) attacks |= (localbb >> 6);
+    if((localbb<<17) & not_a_file) attacks |= (localbb << 17);
+    if((localbb<<15) & not_h_file) attacks |= (localbb << 15);
+    if((localbb<<10) & not_ab_file)attacks |= (localbb << 10);
+    if((localbb<<6) & not_hg_file) attacks |= (localbb << 6);
+    
+    return attacks;
+}
+
+U64 mask_king_attacks(int square){
+    U64 localbb = 0ULL;
+    U64 attacks = 0ULL;
+    //set piece on board
+    set_bit(localbb, square);
+    if((localbb>>7) & not_a_file) attacks |= (localbb >> 7);
+    if((localbb>>1) & not_h_file) attacks |= (localbb >> 1);
+    if((localbb<<7) & not_h_file) attacks |= (localbb << 7);
+    if((localbb>>9) & not_h_file) attacks |= (localbb >> 9);
+    if((localbb<<1) & not_a_file) attacks |= (localbb << 1);
+    if((localbb<<9) & not_a_file) attacks |= (localbb << 9);
+    attacks |= (localbb >> 8);
+    attacks |= (localbb << 8);
+
+    return attacks;
+}
 //init leaper_peaces attacks
 void init_leaper_attacks(){
     for (int square = 0; square < 64 ; square ++){
         pawn_attacks[white][square] = mask_pawn_attacks(white, square);
         pawn_attacks[black][square] = mask_pawn_attacks(black, square);
+        knight_attacks[square] = mask_knight_attacks(square);
+        king_attacks[square] = mask_king_attacks(square);
     }
 }
 
 int main(){
 
     U64 bb = 0ULL;
+
     init_leaper_attacks();
     // for (int square = 0; square < 64 ; square ++){
     //     print_bitboard(pawn_attacks[white][square]);
     // }
     for (int square = 0; square < 64 ; square ++){
-        print_bitboard(pawn_attacks[black][square]);
+        print_bitboard(king_attacks[square]);
     }
-    
 }

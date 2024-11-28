@@ -23,22 +23,25 @@ enum{
 "a1", "b1", "c1", "d1", "e1", "f1", "g1", "h1"
 */
 
+enum{white, black};
+
 //bit macros
-#define get_bit(bb, casilla) (bb & (1ULL <<casilla))
-#define set_bit(bb, casilla) (bb |= (1ULL << casilla))
-#define pop_bit(bb, casilla) get_bit(bb, casilla) ? bb ^= (1ULL << casilla) : 0
+
+#define get_bit(bb, square) (bb & (1ULL << square))
+#define set_bit(bb, square) (bb |= (1ULL << square))
+#define pop_bit(bb, square) get_bit(bb, square) ? bb ^= (1ULL << square) : 0
 //print bitboard
 void print_bitboard(U64 bb)
 {
     printf("\n");
-    for (int fila = 0; fila < 8 ; fila++){
-        for (int col = 0; col < 8 ; col++){
-            int casilla = 8*fila + col;
-            if(!col){
-                printf(" %d ", 8 - fila);
+    for (int rank = 0; rank < 8 ; rank++){
+        for (int file = 0; file < 8 ; file++){
+            int square = 8*rank + file;
+            if(!file){
+                printf(" %d ", 8 - rank);
             }
-            //estado del bit 'casilla' 1 ó 0
-            printf(" %d", get_bit(bb,casilla) ?  1 : 0);
+            //estado del bit 'square' 1 ó 0
+            printf(" %d", get_bit(bb,square) ?  1 : 0);
         }
         printf("\n");
     }
@@ -46,11 +49,59 @@ void print_bitboard(U64 bb)
 
     printf("Bitboard: %llud \n", bb);
 }
-//[side][attacks]
+//tabla de ataques -> [side][attacks]
 U64 pawn_attacks[2][64];
+
+/* not A file
+0 1 1 1 1 1 1 1
+0 1 1 1 1 1 1 1
+0 1 1 1 1 1 1 1
+0 1 1 1 1 1 1 1
+0 1 1 1 1 1 1 1
+0 1 1 1 1 1 1 1
+0 1 1 1 1 1 1 1
+0 1 1 1 1 1 1 1
+*/  
+const U64 not_a_file = 18374403900871474942ULL;
+const U64 not_ab_file = 18229723555195321596ULL;
+const U64 not_h_file = 9187201950435737471ULL;
+const U64 not_hg_file = 4557430888798830399ULL;
+
+//generate pawn attacks
+U64 mask_pawn_attacks(int side, int square){
+    U64 localbb = 0ULL;
+    U64 attacks = 0ULL;
+
+    //set piece on board
+    set_bit(localbb, square);
+    if(!side){ //white
+        if((localbb>>7) & not_a_file) attacks |= (localbb >> 7);
+        if((localbb>>9) & not_h_file) attacks |= (localbb >> 9);
+    }
+    else { //black
+        if((localbb<<7) & not_h_file) attacks |= (localbb << 7);
+        if((localbb<<9) & not_a_file) attacks |= (localbb << 9);
+    }
+    return attacks;
+}
+
+//init leaper_peaces attacks
+void init_leaper_attacks(){
+    for (int square = 0; square < 64 ; square ++){
+        pawn_attacks[white][square] = mask_pawn_attacks(white, square);
+        pawn_attacks[black][square] = mask_pawn_attacks(black, square);
+    }
+}
 
 int main(){
 
     U64 bb = 0ULL;
-
+    init_leaper_attacks();
+    // for (int square = 0; square < 64 ; square ++){
+    //     print_bitboard(pawn_attacks[white][square]);
+    // }
+    for (int square = 0; square < 64 ; square ++){
+        print_bitboard(pawn_attacks[black][square]);
+    }
+    
 }

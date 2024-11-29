@@ -116,8 +116,42 @@ U64 mask_king_attacks(int square){
     if((localbb>>9) & not_h_file) attacks |= (localbb >> 9);
     if((localbb<<1) & not_a_file) attacks |= (localbb << 1);
     if((localbb<<9) & not_a_file) attacks |= (localbb << 9);
-    attacks |= (localbb >> 8);
-    attacks |= (localbb << 8);
+    if(localbb>>8) attacks |= (localbb >> 8);
+    if(localbb<<8) attacks |= (localbb << 8);
+
+    return attacks;
+}
+
+U64 mask_bishop_attacks(int square){
+    U64 attacks = 0ULL;
+
+    int r,f;
+    int tr = square / 8;
+    int tf = square % 8;
+
+    //mask relevant bishop squares
+    for (r = tr + 1, f = tf + 1 ; r <= 6 && f <= 6 ; r++, f++) attacks |= (1ULL << (r * 8 + f));
+    for (r = tr - 1, f = tf + 1 ; r >= 1 && f <= 6 ; r--, f++) attacks |= (1ULL << (r * 8 + f));
+    for (r = tr - 1, f = tf - 1 ; r >= 1 && f >= 1 ; r--, f--) attacks |= (1ULL << (r * 8 + f));
+    for (r = tr + 1, f = tf - 1 ; r <= 6 && f >= 1 ; r++, f--) attacks |= (1ULL << (r * 8 + f));
+
+
+    return attacks;
+}
+
+U64 mask_rook_attacks(int square){
+    U64 attacks = 0ULL;
+
+    int r,f;
+    int tr = square / 8;
+    int tf = square % 8;
+
+    //mask relevant rook squares
+    for (r = tr + 1 ; r <= 6; r++) attacks |= (1ULL << (r * 8 + tf));
+    for (f = tf + 1 ; f <= 6; f++) attacks |= (1ULL << (tr * 8 + f));
+    for (r = tr - 1 ; r >= 1; r--) attacks |= (1ULL << (r * 8 + tf));
+    for (f = tf - 1 ; f >= 1; f--) attacks |= (1ULL << (tr * 8 + f));
+
 
     return attacks;
 }
@@ -136,10 +170,9 @@ int main(){
     U64 bb = 0ULL;
 
     init_leaper_attacks();
-    // for (int square = 0; square < 64 ; square ++){
-    //     print_bitboard(pawn_attacks[white][square]);
-    // }
     for (int square = 0; square < 64 ; square ++){
-        print_bitboard(king_attacks[square]);
+        print_bitboard(mask_rook_attacks(square));
     }
+
+
 }

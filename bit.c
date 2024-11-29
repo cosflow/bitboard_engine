@@ -12,16 +12,17 @@ enum{
     a2, b2, c2, d2, e2, f2, g2, h2,
     a1, b1, c1, d1, e1, f1, g1, h1
 };
-/*
-"a8", "b8", "c8", "d8", "e8", "f8", "g8", "h8",
-"a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7",
-"a6", "b6", "c6", "d6", "e6", "f6", "g6", "h6",
-"a5", "b5", "c5", "d5", "e5", "f5", "g5", "h5",
-"a4", "b4", "c4", "d4", "e4", "f4", "g4", "h4",
-"a3", "b3", "c3", "d3", "e3", "f3", "g3", "h3",
-"a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2",
-"a1", "b1", "c1", "d1", "e1", "f1", "g1", "h1"
-*/
+const char * square_to_coordinates[] = {
+    "a8", "b8", "c8", "d8", "e8", "f8", "g8", "h8",
+    "a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7",
+    "a6", "b6", "c6", "d6", "e6", "f6", "g6", "h6",
+    "a5", "b5", "c5", "d5", "e5", "f5", "g5", "h5",
+    "a4", "b4", "c4", "d4", "e4", "f4", "g4", "h4",
+    "a3", "b3", "c3", "d3", "e3", "f3", "g3", "h3",
+    "a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2",
+    "a1", "b1", "c1", "d1", "e1", "f1", "g1", "h1"
+};
+
 
 enum{white, black};
 
@@ -30,6 +31,25 @@ enum{white, black};
 #define get_bit(bb, square) (bb & (1ULL << square))
 #define set_bit(bb, square) (bb |= (1ULL << square))
 #define pop_bit(bb, square) get_bit(bb, square) ? bb ^= (1ULL << square) : 0
+
+static inline int count_bits(U64 bb){
+    int count = 0;
+
+    while(bb){
+        count++;
+        bb &= bb - 1;
+    }
+
+    return count;
+}
+
+static inline int get_ls1b_index(U64 bb){
+    if(bb){
+        //count trailing bits b4 least significant first bit
+        return count_bits((bb & -bb) - 1);
+    }
+    else return -1;
+}
 //print bitboard
 void print_bitboard(U64 bb)
 {
@@ -235,6 +255,8 @@ int main(){
     set_bit(block, d7);
     set_bit(block, d2);
     set_bit(block, f4);
-    print_bitboard(rook_attacks_on_the_fly(d4, block));
-
+    print_bitboard(block);
+    printf("Bit count: %d\n", count_bits(block));
+    printf("LS1b index: %d Coordinate: %s\n", get_ls1b_index(block), square_to_coordinates[get_ls1b_index(block)]);
+  
 }

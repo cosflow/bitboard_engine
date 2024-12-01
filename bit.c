@@ -2,6 +2,8 @@
 
 #define U64 unsigned long long
 //squares en el tablero
+
+enum{white, black};
 enum{
     a8, b8, c8, d8, e8, f8, g8, h8,
     a7, b7, c7, d7, e7, f7, g7, h7,
@@ -24,7 +26,6 @@ const char * square_to_coordinates[] = {
 };
 
 
-enum{white, black};
 
 //bit macros
 
@@ -74,16 +75,6 @@ U64 pawn_attacks[2][64];
 U64 knight_attacks[64];
 U64 king_attacks[64];
 
-/* not A file
-0 1 1 1 1 1 1 1
-0 1 1 1 1 1 1 1
-0 1 1 1 1 1 1 1
-0 1 1 1 1 1 1 1
-0 1 1 1 1 1 1 1
-0 1 1 1 1 1 1 1
-0 1 1 1 1 1 1 1
-0 1 1 1 1 1 1 1
-*/  
 const U64 not_a_file = 18374403900871474942ULL;
 const U64 not_ab_file = 18229723555195321596ULL;
 const U64 not_h_file = 9187201950435737471ULL;
@@ -231,7 +222,7 @@ U64 rook_attacks_on_the_fly(int square, U64 block){
 
     return attacks;
 }
-//init leaper_peaces attacks
+
 void init_leaper_attacks(){
     for (int square = 0; square < 64 ; square ++){
         pawn_attacks[white][square] = mask_pawn_attacks(white, square);
@@ -239,6 +230,20 @@ void init_leaper_attacks(){
         knight_attacks[square] = mask_knight_attacks(square);
         king_attacks[square] = mask_king_attacks(square);
     }
+}
+
+U64 set_occupancy(int index, int bits_in_mask, U64 attack_mask){
+
+    U64 occupancy_map = 0ULL;
+
+    for(int count = 0 ; count < bits_in_mask ; count++){
+        int square = get_ls1b_index(attack_mask);
+        pop_bit(attack_mask, square);
+
+        if(index & (1 << count)) occupancy_map |= (1ULL << square);
+    }
+
+    return occupancy_map;
 }
 
 int main(){
@@ -249,14 +254,13 @@ int main(){
     // for (int square = 0; square < 64 ; square ++){
     //     print_bitboard(mask_rook_attacks(square));
     // }
-
-    U64 block = 0ULL;
-    set_bit(block, b4);
-    set_bit(block, d7);
-    set_bit(block, d2);
-    set_bit(block, f4);
-    print_bitboard(block);
-    printf("Bit count: %d\n", count_bits(block));
-    printf("LS1b index: %d Coordinate: %s\n", get_ls1b_index(block), square_to_coordinates[get_ls1b_index(block)]);
-  
+    U64 attack_mask = mask_bishop_attacks(d4);
+    
+    //loop over occupancy index
+    for(int i = 0; i < 100 ; i++){
+        U64 occ = set_occupancy(i, count_bits(attack_mask), attack_mask);
+        print_bitboard(occ);
+        getchar();
+    }
+    return 0;
 }
